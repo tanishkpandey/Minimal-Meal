@@ -1,9 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 function Playground() {
+  const navigate = useNavigate();
   const [countryData, setCountryData] = useState([]);
+  const [search, setSearch] = useState("");
   const [random, setRandom] = useState("");
+
+  const getRandomDish = async () => {
+    try {
+      const response = await fetch(
+        "https://www.themealdb.com/api/json/v1/1/random.php"
+      );
+      if (!response.ok) {
+        return console.log("Error occurred while fetching API");
+      }
+      const data = await response.json(); 
+      setRandom(data.meals[0]);
+      return data;
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const getCountries = async () => {
     try {
@@ -20,27 +38,21 @@ function Playground() {
     }
   };
 
-  const getRandomDish = async () => {
+  function changeHandler(event) {
+    setSearch(event.target.value);
+  }
+
+  const getSearch = async () => {
     try {
-      const response = await fetch(
-        "https://www.themealdb.com/api/json/v1/1/random.php"
-      );
-      if (!response.ok) {
-        return console.log("Error occurred while fetching API");
-      }
-      const data = await response.json();
-      setRandom(data.meals[0]);
-      return data;
-    } catch (err) {
-      console.log(err);
+      navigate(`/search/${search}`);
+    } catch (error) {
+      console.log(error);
     }
   };
 
   useEffect(() => {
     getCountries();
   }, []);
-
-  console.log(random);
 
   return (
     <div>
@@ -53,7 +65,7 @@ function Playground() {
             className="mt-4"
             onClick={() => {
               getRandomDish();
-            } }
+            }}
           >
             Random Meal
           </button>
@@ -77,10 +89,9 @@ function Playground() {
         <hr className="mb-12" />
         <h2 className="text-2xl mb-4">Search your meal here</h2>
         <div className="flex gap-2 w-[321px] m-auto">
-          <input type="text" className="rounded-md" />
-          <NavLink to="/">
-            <button>Search</button>
-          </NavLink>
+          <input type="text" className="rounded-md" onChange={changeHandler} />
+
+          <button onClick={getSearch}>Search</button>
         </div>
         <hr className="mt-12" />
       </div>
